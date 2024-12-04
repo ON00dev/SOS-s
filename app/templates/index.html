@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS-s (send SMS)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>SOS-s</h1>
+        <div class="input-group">
+            <label for="responsibleName">Nome da Pessoa:</label>
+            <input type="text" id="responsibleName" placeholder="Digite o nome do contato">
+        </div>
+        <div class="input-group">
+            <label for="phoneNumber">Número de Telefone:</label>
+            <input type="tel" id="phoneNumber" placeholder="+55 (**) *****-****">
+        </div>
+        <button id="addPhone">Adicionar Número</button>
+        <br>
+        
+        </br>
+        <div id="phoneListContainer">
+            <h2>Números de Telefone</h2>
+            <ul id="phoneList"></ul>
+        </div>
+        <div class="input-group">
+            <label for="message">Mensagem:</label>
+            <textarea id="message" rows="4" placeholder="Digite sua mensagem"></textarea>
+        </div>
+        <button id="sendSMS">Enviar SMS</button>
+        <br><br>
+        <div style="text-align: center; color: var(--text);">
+            <a href="https://github.com/ON00dev" style="color: inherit; text-decoration: none; display: inline-block;">© 2024 ON00dev, Inc.</a>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+

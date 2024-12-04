@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Sender</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        input[type="tel"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="tel"]:focus,
+        textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #phoneList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .phone-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fac9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .phone-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SMS Sender</h1>
+        <div class="input-group">
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="tel" id="phoneNumber" placeholder="Enter phone number">
+            <button id="addPhone">Add Phone</button>
+        </div>
+        <ul id="phoneList"></ul>
+        <div class="input-group">
+            <label for="message">Message:</label>
+            <textarea id="message" rows="4" placeholder="Enter your message"></textarea>
+        </div>
+        <button id="sendSMS">Send SMS</button>
+    </div>
+
+    <script>
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const addPhoneButton = document.getElementById('addPhone');
+        const phoneList = document.getElementById('phoneList');
+        const messageInput = document.getElementById('message');
+        const sendSMSButton = document.getElementById('sendSMS');
+
+        const phoneNumbers = [];
+
+        addPhoneButton.addEventListener('click', () => {
+            const phoneNumber = phoneNumberInput.value.trim();
+            if (phoneNumber && !phoneNumbers.includes(phoneNumber)) {
+                phoneNumbers.push(phoneNumber);
+                updatePhoneList();
+                phoneNumberInput.value = '';
+            }
+        });
+
+        function updatePhoneList() {
+            phoneList.innerHTML = '';
+            phoneNumbers.forEach((number, index) => {
+                const li = document.createElement('li');
+                li.className = 'phone-item';
+                li.innerHTML = `
+                    <span>${number}</span>
+                    <button class="remove-btn" data-index="${index}">Remove</button>
+                `;
+                phoneList.appendChild(li);
+            });
+        }
+
+        phoneList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-btn')) {
+                const index = parseInt(e.target.getAttribute('data-index'));
+                phoneNumbers.splice(index, 1);
+                updatePhoneList();
+            }
+        });
+
+        sendSMSButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (phoneNumbers.length > 0 && message) {
+                console.log('Sending SMS:', { phoneNumbers, message });
+                // Here you would typically send this data to your Flask server
+                alert('SMS sent successfully!');
+            } else {
+                alert('Please add at least one phone number and enter a message.');
+            }
+        });
+    </script>
+</body>
+</html>
+
