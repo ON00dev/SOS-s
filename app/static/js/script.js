@@ -128,3 +128,51 @@ function deleteNumber(phoneNumber) {
         return response.json();
     });
 }
+
+const messageInput = document.getElementById('message');
+const saveMessageButton = document.getElementById('saveMessage');
+
+// Carrega a mensagem predefinida ao carregar a página
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/get_message', { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageInput.value = data.message; // Exibe a mensagem salva
+            } else {
+                console.error('Erro ao carregar mensagem:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar mensagem predefinida:', error);
+        });
+
+    updatePhoneList(); // Atualiza os contatos cadastrados
+});
+
+// Salva a mensagem no servidor
+saveMessageButton.addEventListener('click', () => {
+    const messageContent = messageInput.value.trim();
+
+    if (!messageContent) {
+        alert('Por favor, insira uma mensagem antes de salvar.');
+        return;
+    }
+
+    fetch('/save_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: messageContent }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message); // Mensagem salva com sucesso
+            } else {
+                alert('Erro ao salvar mensagem: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao salvar mensagem:', error);
+        });
+});
