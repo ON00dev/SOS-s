@@ -7,7 +7,7 @@ const char* ssid = "SEU_SSID";
 const char* password = "SUA_SENHA";
 
 // Configurações do servidor Flask
-const char* server = "seu-projeto.up.railway.app";
+const char* server = "sos-s-sos-s.up.railway.app";
 const int port = 80;
 
 // Instâncias do GPS
