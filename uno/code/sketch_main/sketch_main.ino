@@ -2,27 +2,34 @@
 #include "SketchGPS.h"
 #include "SketchPins.h"
 
-// Instâncias das classes
+// Instâncias dos módulos
 SketchESP01 esp01;
 SketchGPS gps;
-SketchPins pins;
+SketchPins pinModule;
 
 void setup() {
-  Serial.begin(115200);
-  esp01.setup();   // Configura o ESP-01
-  gps.setup();     // Configura o GPS
-  pins.setup();    // Configura os LEDs
+  esp01.begin();          // Inicializa o ESP-01
+  gps.begin();            // Inicializa o GPS
+  pinModule.begin();      // Inicializa os pinos
+  pinModule.turnOn(8);    // Liga o LED do pino 8 (Wi-Fi conectado)
 }
 
 void loop() {
-  esp01.handle();  // Gerencia conexões do ESP-01
-  if (gps.handle()) { // Captura localização
-    float latitude = gps.getLatitude();
-    float longitude = gps.getLongitude();
-    pins.turnOnLocationLED(); // Acende o LED da localização
-    esp01.sendLocation(latitude, longitude); // Envia localização ao servidor
+  gps.update();           // Atualiza os dados do GPS
+  esp01.handle(gps);      // Passa o objeto GPS para o ESP-01 gerenciar
+
+  if (gps.hasNewData()) { // Verifica se há novos dados de localização
+    double latitude = gps.getLatitude();
+    double longitude = gps.getLongitude();
+    pinModule.turnOn(9);  // Liga o LED do pino 9 (localização capturada)
+
+    // Envia a localização ao servidor
+    String coordJson = "{\"latitude\": " + String(latitude, 6) + ", \"longitude\": " + String(longitude, 6) + "}";
+    esp01.sendToServer(coordJson);
   }
+
+  // Verifica se o SMS foi enviado
   if (esp01.checkSMSSent()) {
-    pins.turnOnSMSLED(); // Acende o LED do SMS enviado
+    pinModule.turnOn(10); // Liga o LED do pino 10
   }
 }

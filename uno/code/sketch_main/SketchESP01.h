@@ -9,8 +9,8 @@
 
 class SketchESP01 {
   private:
-    const char* ssid = "DFRANCY DRYWALL CENTRO";
-    const char* password = "dfrancy2023drywall";
+    const char* ssid = "hardware2";
+    const char* password = "placapai";
     WiFiServer server;
     std::vector<String> coordinates;  // Lista para armazenar coordenadas
     unsigned long lastCaptureTime;
@@ -23,6 +23,8 @@ class SketchESP01 {
     SketchESP01() : server(80), lastCaptureTime(0) {}
     void setup();
     void handle(SketchGPS& gps);
+    bool checkSMSSent();
+
 };
 
 #endif

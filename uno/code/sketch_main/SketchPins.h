@@ -1,8 +1,10 @@
-#ifndef SKETCH_PINS_H
-#define SKETCH_PINS_H
+#ifndef SKETCH_PIN_H
+#define SKETCH_PIN_H
+
+#include <Arduino.h>
 
 class SketchPins {
-  public:
+public:
     void setup();
     void turnOnWiFiLED();
     void turnOnLocationLED();
