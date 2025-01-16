@@ -10,20 +10,23 @@ unsigned short sat;
 
 // Configurações do ESP01
 SoftwareSerial esp8266(2, 3); // RX e TX do ESP8266
-#define LED_PIN 13
+#define LED_SUCCESS 13
+#define LED_ERROR 12
 
 void sendData(String command, const int timeout, bool debug) {
+  Serial.println("Enviando comando: " + command); // Adicionado
   esp8266.print(command);
   long int time = millis();
   while ((time + timeout) > millis()) {
     while (esp8266.available()) {
       String response = esp8266.readString();
       if (debug) {
-        Serial.println(response);
+        Serial.println("Resposta: " + response); // Adicionado
       }
     }
   }
 }
+
 
 void setup() {
   // Inicializa comunicação serial
@@ -31,9 +34,11 @@ void setup() {
   SerialGPS.begin(9600);
   esp8266.begin(115200);
 
-  // Configura o LED como saída
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
+  // Configura os LEDs como saída
+  pinMode(LED_SUCCESS, OUTPUT);
+  pinMode(LED_ERROR, OUTPUT);
+  digitalWrite(LED_SUCCESS, LOW);
+  digitalWrite(LED_ERROR, LOW);
 
   // Informa o início da configuração
   Serial.println("Iniciando...");
@@ -42,13 +47,22 @@ void setup() {
   sendData("AT+RST\r\n", 2000, true);
 
   // Conecta ao Wi-Fi
-  sendData("AT+CWJAP=\"OME_DA_SUA_REDE}\",\"SENHA_DA_SUA_REDE\"\r\n", 5000, true);
+  sendData("AT+CWJAP=\"DFRANCY DRYWALL CENTRO\",\"dfrancy2023drywall\"\r\n", 5000, true);
 
   // Configura o modo Wi-Fi
   sendData("AT+CWMODE=1\r\n", 1000, true);
 
   // Mostra o endereço IP
   sendData("AT+CIFSR\r\n", 1000, true);
+  if (esp8266.available()) {
+    String response = esp8266.readString();
+    Serial.println("Endereço IP: " + response);
+    if (response.indexOf("ERROR") != -1) {
+      digitalWrite(LED_ERROR, HIGH);
+      digitalWrite(LED_SUCCESS, LOW);
+      return;
+    }
+  }
 
   // Configura múltiplas conexões
   sendData("AT+CIPMUX=1\r\n", 1000, true);
@@ -56,9 +70,18 @@ void setup() {
   // Inicia o servidor na porta 80
   sendData("AT+CIPSERVER=1,80\r\n", 1000, true);
 
-  // Acende o LED indicando sucesso
-  digitalWrite(LED_PIN, HIGH);
-  Serial.println("Servidor iniciado com sucesso!");
+  // Verifica se o servidor foi iniciado com sucesso
+  while (esp8266.available()) {
+    String response = esp8266.readString();
+    if (response.indexOf("OK") != -1) {
+      digitalWrite(LED_SUCCESS, HIGH);
+      Serial.println("Servidor iniciado com sucesso!");
+    } else {
+      digitalWrite(LED_ERROR, HIGH);
+      digitalWrite(LED_SUCCESS, LOW);
+      Serial.println("Erro ao iniciar o servidor.");
+    }
+  }
 }
 
 void loop() {
