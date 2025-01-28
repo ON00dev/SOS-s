@@ -2,120 +2,99 @@
 #include <TinyGPS.h>
 
 // Configurações do GPS
-SoftwareSerial SerialGPS(8, 9);
+SoftwareSerial SerialGPS(8, 9);  // RX, TX do GPS
 TinyGPS GPS;
+
+// Configuração do ESP01
+SoftwareSerial ESP01(2, 3);  // RX(2), TX(3) para ESP01
+
+// Variáveis do GPS
 float lat, lon, vel;
 unsigned long data, hora;
 unsigned short sat;
 
-// Configurações do ESP01
-SoftwareSerial esp8266(2, 3); // RX e TX do ESP8266
+// LEDs de status
 #define LED_SUCCESS 13
 #define LED_ERROR 12
 
-void sendData(String command, const int timeout, bool debug) {
-  Serial.println("Enviando comando: " + command); // Adicionado
-  esp8266.print(command);
-  long int time = millis();
-  while ((time + timeout) > millis()) {
-    while (esp8266.available()) {
-      String response = esp8266.readString();
-      if (debug) {
-        Serial.println("Resposta: " + response); // Adicionado
-      }
-    }
-  }
-}
-
-
 void setup() {
   // Inicializa comunicação serial
-  Serial.begin(9600);
-  SerialGPS.begin(9600);
-  esp8266.begin(115200);
-
-  // Configura os LEDs como saída
+  Serial.begin(9600);        // Serial monitor
+  SerialGPS.begin(9600);     // GPS
+  ESP01.begin(9600);         // ESP01
+  
+  // Configura os LEDs
   pinMode(LED_SUCCESS, OUTPUT);
   pinMode(LED_ERROR, OUTPUT);
   digitalWrite(LED_SUCCESS, LOW);
   digitalWrite(LED_ERROR, LOW);
 
-  // Informa o início da configuração
-  Serial.println("Iniciando...");
-
-  // Reinicia o ESP8266
-  sendData("AT+RST\r\n", 2000, true);
-
-  // Conecta ao Wi-Fi
-  sendData("AT+CWJAP=\"DFRANCY DRYWALL CENTRO\",\"dfrancy2023drywall\"\r\n", 5000, true);
-
-  // Configura o modo Wi-Fi
-  sendData("AT+CWMODE=1\r\n", 1000, true);
-
-  // Mostra o endereço IP
-  sendData("AT+CIFSR\r\n", 1000, true);
-  if (esp8266.available()) {
-    String response = esp8266.readString();
-    Serial.println("Endereço IP: " + response);
-    if (response.indexOf("ERROR") != -1) {
-      digitalWrite(LED_ERROR, HIGH);
-      digitalWrite(LED_SUCCESS, LOW);
-      return;
-    }
-  }
-
-  // Configura múltiplas conexões
-  sendData("AT+CIPMUX=1\r\n", 1000, true);
-
-  // Inicia o servidor na porta 80
-  sendData("AT+CIPSERVER=1,80\r\n", 1000, true);
-
-  // Verifica se o servidor foi iniciado com sucesso
-  while (esp8266.available()) {
-    String response = esp8266.readString();
-    if (response.indexOf("OK") != -1) {
-      digitalWrite(LED_SUCCESS, HIGH);
-      Serial.println("Servidor iniciado com sucesso!");
-    } else {
-      digitalWrite(LED_ERROR, HIGH);
-      digitalWrite(LED_SUCCESS, LOW);
-      Serial.println("Erro ao iniciar o servidor.");
-    }
-  }
+  Serial.println("\n\nArduino iniciado!");
+  Serial.println("GPS: Aguardando dados...");
+  Serial.println("ESP01: Aguardando comunicação...");
 }
 
 void loop() {
   // Verifica se há dados do GPS disponíveis
   while (SerialGPS.available()) {
     if (GPS.encode(SerialGPS.read())) {
-      // Obtém hora e data
+      // Obtém dados do GPS
       GPS.get_datetime(&data, &hora);
-
-      // Obtém latitude e longitude
       GPS.f_get_position(&lat, &lon);
-
-      // Obtém velocidade
       vel = GPS.f_speed_kmph();
-
-      // Obtém número de satélites
       sat = GPS.satellites();
 
       // Formata os dados em JSON
-      String json = "{\"latitude\": " + String(lat, 6) + ", ";
-      json += "\"longitude\": " + String(lon, 6) + ", ";
-      json += "\"velocidade\": " + String(vel) + ", ";
-      json += "\"satelites\": " + String(sat) + ", ";
-      json += "\"hora\": \"" + formatTime(hora) + "\", ";
-      json += "\"data\": \"" + formatDate(data) + "\"}";
-
-      // Envia os dados ao cliente
-      sendData("AT+CIPSEND=0," + String(json.length()) + "\r\n", 1000, true);
-      sendData(json + "\r\n", 1000, true);
+      String json = "{\"latitude\":" + String(lat, 6) + ",";
+      json += "\"longitude\":" + String(lon, 6) + ",";
+      json += "\"velocidade\":" + String(vel) + ",";
+      json += "\"satelites\":" + String(sat) + ",";
+      json += "\"hora\":\"" + formatTime(hora) + "\",";
+      json += "\"data\":\"" + formatDate(data) + "\"}";
 
       // Debug no monitor serial
-      Serial.println("Dados enviados: " + json);
+      Serial.println("\nDados do GPS:");
+      Serial.println("Latitude: " + String(lat, 6));
+      Serial.println("Longitude: " + String(lon, 6));
+      Serial.println("Velocidade: " + String(vel) + " km/h");
+      Serial.println("Satélites: " + String(sat));
+      Serial.println("Data/Hora: " + formatDate(data) + " " + formatTime(hora));
+
+      // Envia para o ESP8266 via SoftwareSerial
+      Serial.println("Enviando dados para ESP01...");
+      ESP01.println(json);
+      
+      // Indica sucesso
+      digitalWrite(LED_SUCCESS, HIGH);
+      delay(100);
+      digitalWrite(LED_SUCCESS, LOW);
     }
   }
+  
+  // Verifica se há comandos do ESP8266
+  if (ESP01.available()) {
+    String cmd = ESP01.readStringUntil('\n');
+    Serial.println("Recebido do ESP01: " + cmd);
+    
+    if (cmd == "STATUS") {
+      Serial.println("Enviando status OK para ESP01");
+      ESP01.println("{\"status\":\"OK\"}");
+    }
+  }
+  
+  // Se não há dados do GPS, pisca LED de erro
+  static unsigned long lastGPSCheck = 0;
+  if (millis() - lastGPSCheck > 5000) {  // Verifica a cada 5 segundos
+    if (sat == 0) {
+      Serial.println("AVISO: Sem sinal GPS!");
+      digitalWrite(LED_ERROR, HIGH);
+      delay(100);
+      digitalWrite(LED_ERROR, LOW);
+    }
+    lastGPSCheck = millis();
+  }
+  
+  delay(1000); // Atualiza a cada segundo
 }
 
 String formatTime(unsigned long hora) {
