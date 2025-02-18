@@ -7,7 +7,7 @@ Este projeto aborda a **localização em tempo real** e a **transmissão de dado
 
 ### **2. Funcionalidade**  
 Este sistema combina diferentes módulos e sensores para atingir sua funcionalidade principal:  
-- **Interface Web**: [SOS-s](https://sos-s-sos-s.up.railway.app/)
+- **Interface Web**: [SOS-s](https://sos-s-sos-s.up.railway.app/) (Interação com usuário para definir numeros de telefones para envio de sms).
 - **GPS**: Captura a localização em tempo real (latitude, longitude) e outros dados relevantes, como velocidade e número de satélites disponíveis.  
 - **ESP8266 (ESP01)**: Conecta o sistema à internet, transmitindo os dados obtidos pelo GPS para um servidor remoto.  
 - **Arduino**: Atua como controlador central, integrando os módulos e gerenciando a lógica de operação, incluindo:  
