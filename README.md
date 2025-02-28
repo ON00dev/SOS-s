@@ -104,6 +104,12 @@ void sendData(String command, const int timeout, bool debug) {
 **[código completo aqui](https://github.com/ON00dev/SOS-s/blob/main/uno/code/sketch_main/sketch_main.ino)**
 
 ---
+**Schema**
+<img src="https://github.com/ON00dev/SOS-s/blob/main/uno/exemplos/schema.png">
+
+[ferramenta usada para schema](https://app.cirkitdesigner.com)
+
+---
 
 ### **8. Observações Importantes**  
 Certifique-se de ajustar os parâmetros do código para a rede Wi-Fi utilizada, como SSID e senha. Além disso, revise as conexões elétricas para evitar danos aos componentes.  
