@@ -107,7 +107,7 @@ void sendData(String command, const int timeout, bool debug) {
 **Schema**
 <img src="https://github.com/ON00dev/SOS-s/blob/main/uno/exemplos/schema.png">
 
-[ferramenta usada para schema](https://app.cirkitdesigner.com)
+[schema criado com cirkitdesigner](https://app.cirkitdesigner.com)
 
 ---
 
