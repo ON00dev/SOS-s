@@ -9,6 +9,8 @@ const char* password = "dfrancy2023drywall";
 // Servidor Web na porta 80
 ESP8266WebServer server(80);
 
+DynamicJsonDocument doc(256); // Pode aumentar se o JSON for maior
+
 // Buffer para dados do GPS
 String lastGPSData = "{}";
 
@@ -58,19 +60,25 @@ void setup() {
 void loop() {
   // Gerencia servidor web
   server.handleClient();
-  
-  // Lê dados do Arduino se disponível
-  if (Serial.available()) {
+
+   if (Serial.available()) {
     String data = Serial.readStringUntil('\n');
-    if (data.startsWith("{")) {  // Verifica se é JSON
-      Serial.println("Dados recebidos do Arduino: " + data);
+
+    DeserializationError error = deserializeJson(doc, data);   // Adicionei essa validação mais limpa pra reconhecer o Json.
+     
+    if (!error) {
+      Serial.println("Dados JSON válidos recebidos: " + data);
       lastGPSData = data;
-      // Pisca LED ao receber dados
+
+      // Pisca LED ao receber dados válidos
       digitalWrite(LED_BUILTIN, HIGH);
       delay(50);
       digitalWrite(LED_BUILTIN, LOW);
+    } else {
+      Serial.println("Erro: dados inválidos, não é JSON.");
     }
-  }
+   }
+  
   
   // Verifica status do Arduino periodicamente
   static unsigned long lastCheck = 0;
