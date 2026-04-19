@@ -3,8 +3,8 @@
 #include <ArduinoJson.h>
 
 // Configurações do WiFi
-const char* ssid = "DFRANCY DRYWALL CENTRO";
-const char* password = "dfrancy2023drywall";
+const char* ssid = "seu SSID do wifi aqui";
+const char* password = "senha do wifi aqui";
 
 // Servidor Web na porta 80
 ESP8266WebServer server(80);
